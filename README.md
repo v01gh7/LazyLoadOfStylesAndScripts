@@ -9,7 +9,7 @@ It triggers when LazyLoad block occurs in view port.
 You can load as just js file, or include it in end of body tag.
 
 
-## Usage
+## View of ready load task.
 In a window scope have list of task to load "rapidLazyLoads", example is bellow, just follow along, and it will lazy load you stuff.
 
 ```JavaScript
@@ -26,6 +26,22 @@ window.rapidLazyLoads = [
 	}
 ];
 ```
+
+## USAGE EXAMPLE
+
+```JavaScript
+window.rapidLazyLoads.push(
+	{
+		triggerElementSelector: '[name="phone__number"]',
+		styles: [],
+		js: [
+			'https://cdnjs.cloudflare.com/ajax/libs/jquery.maskedinput/1.4.1/jquery.maskedinput.min.js'
+		],
+		jsTriggerChain: 'initPhoneNumbers'
+	}
+);
+```
+
 
 jsTriggerChain ==> is just name of list in window scope, which contains functions to later call.
 
