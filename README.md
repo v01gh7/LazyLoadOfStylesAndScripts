@@ -72,27 +72,27 @@ Please make sure to update tests as appropriate.
 
 ## General Tags:
 
-javascript
-vanillajs
-lazyloading
-performance
-optimization
-googlepagespeedinsights
-front-end
-webdev
+- javascript
+- vanillajs
+- lazyloading
+- performance
+- optimization
+- googlepagespeedinsights
+- front-end
+- webdev
 
 ## Specific Tags:
 
-wordpress
-html5
-template
-mvp
-freelance
-lightweight
+- wordpress
+- html5
+- template
+- mvp
+- freelance
+- lightweight
 
 ## Additional Tags:
 
-performance-optimization
-web-performance
-front-end-performance
-script-optimization
+- performance-optimization
+- web-performance
+- front-end-performance
+- script-optimization
