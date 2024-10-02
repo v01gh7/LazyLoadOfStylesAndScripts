@@ -38,6 +38,55 @@ window.rapidLazyLoads = [
 
 
 
+// Function to check if an element is in the viewport
+function isElementInViewport(el) {
+	const rect = el.getBoundingClientRect();
+	return (
+		rect.top >= 0 && (rect.top <= window.innerHeight || rect.top <= document.documentElement.clientHeight) || rect.left >= 0 && (rect.left <= window.innerWidth || rect.left <= document.documentElement.clientWidth)
+	);
+}
+
+// Function to load styles and scripts
+function loadStylesAndScripts(el, obj, styles, js) {
+	// Load styles
+	for(const style of styles){
+		const styleLink = document.createElement('link');
+		styleLink.rel = 'stylesheet';
+		styleLink.href = style;
+		document.head.appendChild(styleLink);
+	}
+
+	// Load scripts
+	for(const jsScript of js){
+		const script = document.createElement('script');
+		script.src = jsScript;
+		script.async = true;
+		if(obj.jsTriggerChain && window[obj.jsTriggerChain]){
+			window.triggersChains.push(...window[obj.jsTriggerChain]);
+			script.onload = event => {
+				for(let jsTriggerChain of jsTriggerChains){
+					jsTriggerChain();
+				}
+			};
+		}				
+		document.body.appendChild(script);
+	}
+}
+
+function updateLazyLoadStack(el){
+	for (let i = 0; i < window.rapidLazyLoads.length; i++) {
+		if (window.rapidLazyLoads[i].triggerElementSelector === el.triggerElementSelector) {
+			window.rapidLazyLoads.splice(i, 1); // Remove the dictionary at index i
+			break; // Stop the loop after removing the dictionary
+		}
+	}	
+}
+
+for(let rapidLazyload of window.rapidLazyLoads){
+	if(!document.querySelector(rapidLazyload.triggerElementSelector)){
+		updateLazyLoadStack(rapidLazyload);
+	}
+}
 
 
 window.triggersChains = [];
