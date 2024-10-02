@@ -12,7 +12,7 @@ You can load as just js file, or include it in end of body tag.
 ## View of ready load task.
 In a window scope have list of task to load "rapidLazyLoads", example is bellow, just follow along, and it will lazy load you stuff.
 
-```JavaScript
+```javascript
 window.rapidLazyLoads = [
 	{
 		triggerElementSelector: '.swiper-container',
@@ -29,7 +29,7 @@ window.rapidLazyLoads = [
 
 ## USAGE EXAMPLE
 
-```JavaScript
+```javascript
 window.rapidLazyLoads.push(
 	{
 		triggerElementSelector: '[name="phone__number"]',
@@ -45,13 +45,13 @@ window.rapidLazyLoads.push(
 
 jsTriggerChain ==> is just name of list in window scope, which contains functions to later call.
 
-```JavaScript
+```javascript
 window.initSlides = [];
 ```
 
 Just in some point in your code push function into your trigger chain which you setuped previously.
 
-```JavaScript
+```javascript
 const initProductSlider = _ => {...};
 window.initSlides.push(initProductSlider);
 ```
