@@ -53,3 +53,30 @@ Please make sure to update tests as appropriate.
 ## License
 
 [MIT](https://choosealicense.com/licenses/mit/)
+
+## General Tags:
+
+javascript
+vanillajs
+lazyloading
+performance
+optimization
+googlepagespeedinsights
+front-end
+webdev
+
+## Specific Tags:
+
+wordpress
+html5
+template
+mvp
+freelance
+lightweight
+
+## Additional Tags:
+
+performance-optimization
+web-performance
+front-end-performance
+script-optimization
