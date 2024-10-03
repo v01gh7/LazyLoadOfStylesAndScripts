@@ -36,7 +36,7 @@ window.rapidLazyLoads = [
 	},
 ];
 
-
+window.rapidLazyLoadState = [];
 
 // Function to check if an element is in the viewport
 function isElementInViewport(el) {
@@ -46,30 +46,38 @@ function isElementInViewport(el) {
 	);
 }
 
+
+
 // Function to load styles and scripts
 function loadStylesAndScripts(el, obj, styles, js) {
 	// Load styles
 	for(const style of styles){
-		const styleLink = document.createElement('link');
-		styleLink.rel = 'stylesheet';
-		styleLink.href = style;
-		document.head.appendChild(styleLink);
+		if(!window.rapidLazyLoadState.includes(style)){
+			window.rapidLazyLoadState.push(style);
+			const styleLink = document.createElement('link');
+			styleLink.rel = 'stylesheet';
+			styleLink.href = style;
+			document.head.appendChild(styleLink);
+		}
 	}
 
 	// Load scripts
 	for(const jsScript of js){
-		const script = document.createElement('script');
-		script.src = jsScript;
-		script.async = true;
-		if(obj.jsTriggerChain && window[obj.jsTriggerChain]){
-			window.triggersChains.push(...window[obj.jsTriggerChain]);
-			script.onload = event => {
-				for(let jsTriggerChain of jsTriggerChains){
-					jsTriggerChain();
-				}
-			};
-		}				
-		document.body.appendChild(script);
+		if(!window.rapidLazyLoadState.includes(jsScript)){
+			window.rapidLazyLoadState.push(jsScript);
+			const script = document.createElement('script');
+			script.src = jsScript;
+			script.async = true;
+			if(obj.jsTriggerChain && window[obj.jsTriggerChain]){
+				window.triggersChains.push(...window[obj.jsTriggerChain]);
+				script.onload = event => {
+					for(let jsTriggerChain of window.jsTriggerChains){
+						jsTriggerChain();
+					}
+				};
+			}				
+			document.body.appendChild(script);
+		}
 	}
 }
 
