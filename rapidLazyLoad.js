@@ -23,7 +23,7 @@ window.rapidLazyLoads = [
 		js: [
 			'https://cdn.jsdelivr.net/npm/swiper@8/swiper-bundle.min.js'
 		],
-		jsTriggerChain: 'initSlides'
+		jsCallbackChain: 'initSlides'
 
 	},
 	{
@@ -32,7 +32,7 @@ window.rapidLazyLoads = [
 		js: [
 			'https://cdnjs.cloudflare.com/ajax/libs/jquery.maskedinput/1.4.1/jquery.maskedinput.min.js'
 		],
-		jsTriggerChain: 'initPhoneNumbers'
+		jsCallbackChain: 'initPhoneNumbers'
 	},
 ];
 
@@ -47,38 +47,50 @@ function isElementInViewport(el) {
 }
 
 
+function updateLazyLoadState(src) {
+	return window.rapidLazyLoadState.push(src);
+}
+
 function getElement(target, targetFrom=false){
 
 	return targetFrom ? targetFrom.querySelector(target) : document.querySelector(target);
 
 }
 
-// Function to load styles and scripts
-function loadStylesAndScripts(el, obj, styles, js) {
-	// Load styles
+
+function canILoadIt(elToLoad, selectorToLoad) {
+	return !window.rapidLazyLoadState.includes(elToLoad) && !getElement(selectorToLoad)
+}
+
+function loadStyles(styles){
 	for(const style of styles){
-		if(!window.rapidLazyLoadState.includes(style) && !getElement(`link[href="${ style }"]`)){
-			window.rapidLazyLoadState.push(style);
+		if(canILoadIt(style, `link[href="${ style }"]`)){
+			updateLazyLoadState(style);
 			const styleLink = document.createElement('link');
 			styleLink.rel = 'stylesheet';
 			styleLink.href = style;
 			document.head.appendChild(styleLink);
 		}
-	}
+	}	
+}
 
-	// Load scripts
-	for(const jsScript of js){
-		if(!window.rapidLazyLoadState.includes(jsScript) && !getElement(`script[src="${ jsScript }"]`)){
-			window.rapidLazyLoadState.push(jsScript);
+// Function to load styles and scripts
+function loadScripts(scripts, jsCallbackChain) {
+
+	for(const scriptSrc of scripts){
+		if(canILoadIt(scriptSrc, `script[src="${ scriptSrc }"]`)){
+			updateLazyLoadState(scriptSrc);
+
 			const script = document.createElement('script');
-			script.src = jsScript;
-			script.async = true;
-			if(window[obj.jsTriggerChain]){
-				jsTriggerChains = window[obj.jsTriggerChain];
-				window.triggersChains.push(...jsTriggerChains);
+			script.src = scriptSrc;
+			script.defer = true;
+			if(jsCallbackChain && window[jsCallbackChain]){
+				// in some point it triggers "window[jsCallbackChain]" as not iterable, but it's a list of functions,
+				// that's why repush into another list as simple fast bypass error
+				window.triggersChains.push(...window[jsCallbackChain]);
 				script.addEventListener('load', _ => {
-					for(let jsTriggerChain of window.jsTriggerChains){
-						jsTriggerChain();
+					for(let triggerChain of window.triggersChains){
+						triggerChain();
 					}
 				});
 			}				
@@ -87,9 +99,9 @@ function loadStylesAndScripts(el, obj, styles, js) {
 	}
 }
 
-function updateLazyLoadStack(el){
+function updateLazyLoadStack(searchTriggerElementSelector){
 	for (let i = 0; i < window.rapidLazyLoads.length; i++) {
-		if (window.rapidLazyLoads[i].triggerElementSelector === el.triggerElementSelector) {
+		if (window.rapidLazyLoads[i].triggerElementSelector === searchTriggerElementSelector) {
 			window.rapidLazyLoads.splice(i, 1); // Remove the dictionary at index i
 			break; // Stop the loop after removing the dictionary
 		}
@@ -104,16 +116,28 @@ for(let rapidLazyload of window.rapidLazyLoads){
 
 
 window.triggersChains = [];
+
 const rapidLazyLoadLoader = _ =>{
+
 	for(let rapidLazyload of window.rapidLazyLoads){
+
 		const lazyLoadBlock = document.querySelector(rapidLazyload.triggerElementSelector);
+
 		if (lazyLoadBlock && isElementInViewport(lazyLoadBlock)) {
-			loadStylesAndScripts(lazyLoadBlock, rapidLazyload, rapidLazyload.styles, rapidLazyload.js);
-			updateLazyLoadStack(rapidLazyload);
+			if(rapidLazyload.styles){
+				loadStyles(rapidLazyload.styles);
+			}
+			if(rapidLazyload.js){
+				loadScripts(rapidLazyload.js, rapidLazyload.jsCallbackChain);
+			}
+
+			updateLazyLoadStack(rapidLazyload.triggerElementSelector);
+
 			if(window.rapidLazyLoads.length <= 0){
 				window.removeEventListener('scroll', rapidLazyLoadLoader);
 			}
 		}
-	}			
+	}
+
 };
 window.addEventListener('scroll', rapidLazyLoadLoader);		
