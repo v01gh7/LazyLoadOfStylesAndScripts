@@ -47,12 +47,17 @@ function isElementInViewport(el) {
 }
 
 
+function getElement(target, targetFrom=false){
+
+	return targetFrom ? targetFrom.querySelector(target) : document.querySelector(target);
+
+}
 
 // Function to load styles and scripts
 function loadStylesAndScripts(el, obj, styles, js) {
 	// Load styles
 	for(const style of styles){
-		if(!window.rapidLazyLoadState.includes(style)){
+		if(!window.rapidLazyLoadState.includes(style) && !getElement(`link[href="${ style }"]`)){
 			window.rapidLazyLoadState.push(style);
 			const styleLink = document.createElement('link');
 			styleLink.rel = 'stylesheet';
@@ -63,18 +68,19 @@ function loadStylesAndScripts(el, obj, styles, js) {
 
 	// Load scripts
 	for(const jsScript of js){
-		if(!window.rapidLazyLoadState.includes(jsScript)){
+		if(!window.rapidLazyLoadState.includes(jsScript) && !getElement(`script[src="${ jsScript }"]`)){
 			window.rapidLazyLoadState.push(jsScript);
 			const script = document.createElement('script');
 			script.src = jsScript;
 			script.async = true;
-			if(obj.jsTriggerChain && window[obj.jsTriggerChain]){
-				window.triggersChains.push(...window[obj.jsTriggerChain]);
-				script.onload = event => {
+			if(window[obj.jsTriggerChain]){
+				jsTriggerChains = window[obj.jsTriggerChain];
+				window.triggersChains.push(...jsTriggerChains);
+				script.addEventListener('load', _ => {
 					for(let jsTriggerChain of window.jsTriggerChains){
 						jsTriggerChain();
 					}
-				};
+				});
 			}				
 			document.body.appendChild(script);
 		}
