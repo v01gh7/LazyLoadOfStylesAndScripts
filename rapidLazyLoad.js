@@ -58,9 +58,19 @@ function getElement(target, targetFrom=false){
 }
 
 
+
+const getAttribute = (element, attr, isReturnValue) => {
+	if(element && element.attributes && element.attributes[attr]){
+		return isReturnValue ? element.attributes[attr].value : element.attributes[attr];
+	}
+	return false;
+
+}
+
 function canILoadIt(elToLoad, selectorToLoad) {
 	return !window.rapidLazyLoadState.includes(elToLoad) && !getElement(selectorToLoad)
 }
+
 
 function loadStyles(styles){
 	for(const style of styles){
@@ -108,6 +118,14 @@ function updateLazyLoadStack(searchTriggerElementSelector){
 	}	
 }
 
+function getFromLazyLoadStack(searchTriggerElementSelector){
+	for (let i = 0; i < window.rapidLazyLoads.length; i++) {
+		if (window.rapidLazyLoads[i].triggerElementSelector === searchTriggerElementSelector) {
+			return window.rapidLazyLoads[i]; // Remove the dictionary at index i
+		}
+	}	
+}
+
 for(let rapidLazyload of window.rapidLazyLoads){
 	if(!document.querySelector(rapidLazyload.triggerElementSelector)){
 		updateLazyLoadStack(rapidLazyload);
@@ -115,29 +133,34 @@ for(let rapidLazyload of window.rapidLazyLoads){
 }
 
 
+
 window.triggersChains = [];
+window.currentProcessingTarget = null;
 
-const rapidLazyLoadLoader = _ =>{
-
-	for(let rapidLazyload of window.rapidLazyLoads){
-
-		const lazyLoadBlock = document.querySelector(rapidLazyload.triggerElementSelector);
-
-		if (lazyLoadBlock && isElementInViewport(lazyLoadBlock)) {
-			if(rapidLazyload.styles){
-				loadStyles(rapidLazyload.styles);
+const rapidLazyLoadObserer = new IntersectionObserver((entries) => {
+  entries.forEach((entry) => {
+    if (entry.isIntersecting && window.currentProcessingTarget != entry.target) {
+    	window.currentProcessingTarget = entry.target;
+    	currentTargetLazyLoadBlock = getFromLazyLoadStack(getAttribute(entry.target, 'data-observe_selector', true));
+    	if(currentTargetLazyLoadBlock){
+			if(currentTargetLazyLoadBlock.styles){
+				loadStyles(currentTargetLazyLoadBlock.styles);
 			}
-			if(rapidLazyload.js){
-				loadScripts(rapidLazyload.js, rapidLazyload.jsCallbackChain);
+			if(currentTargetLazyLoadBlock.js){
+				loadScripts(currentTargetLazyLoadBlock.js, currentTargetLazyLoadBlock.jsCallbackChain);
 			}
 
-			updateLazyLoadStack(rapidLazyload.triggerElementSelector);
+			updateLazyLoadStack(currentTargetLazyLoadBlock.triggerElementSelector);
+			rapidLazyLoadObserer.unobserve(entry.target);	    		
+    	}
+    }
+  });
+}, { });
 
-			if(window.rapidLazyLoads.length <= 0){
-				window.removeEventListener('scroll', rapidLazyLoadLoader);
-			}
-		}
+for(let rapidLazyload of window.rapidLazyLoads){
+	const observeTarget = document.querySelector(rapidLazyload.triggerElementSelector);
+	if(observeTarget){
+		observeTarget.setAttribute('data-observe_selector', rapidLazyload.triggerElementSelector);
+		rapidLazyLoadObserer.observe(observeTarget);
 	}
-
-};
-window.addEventListener('scroll', rapidLazyLoadLoader);		
+}
